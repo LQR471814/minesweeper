@@ -8,11 +8,17 @@ enum GameState {
 }
 
 class Game {
-    Space[][] spaces;
-    int numberMines;
-    GameState state = GameState.INIT;
+    private Space[][] spaces;
+    private int numberMines;
+    private GameState state = GameState.INIT;
+    private int flagsUsed;
 
-    int flagsUsed;
+    GameState getState() {
+        return this.state;
+    }
+    int getFlagsUsed() {
+        return this.flagsUsed;
+    }
 
     private void initSpaces() {
         for (int y = 0; y < this.spaces.length; y++) {
@@ -44,32 +50,40 @@ class Game {
     }
 
     private void addMine(int x, int y) {
-        this.spaces[y][x].isMine = true;
+        this.spaces[y][x].setIsMine(true);
 
         if (y-1 >= 0) {
-            this.spaces[y-1][x].neighboringMineCount++;
+            Space space = this.spaces[y-1][x];
+            space.setNeighboringMineCount(space.getNeighboringMineCount() + 1);
         }
         if (y+1 < this.spaces.length) {
-            this.spaces[y+1][x].neighboringMineCount++;
+            Space space = this.spaces[y+1][x];
+            space.setNeighboringMineCount(space.getNeighboringMineCount() + 1);
         }
         if (x-1 >= 0) {
-            this.spaces[y][x-1].neighboringMineCount++;
+            Space space = this.spaces[y][x-1];
+            space.setNeighboringMineCount(space.getNeighboringMineCount() + 1);
         }
         if (x+1 < this.spaces[y].length) {
-            this.spaces[y][x+1].neighboringMineCount++;
+            Space space = this.spaces[y][x+1];
+            space.setNeighboringMineCount(space.getNeighboringMineCount() + 1);
         }
 
         if (y-1 >= 0 && x-1 >= 0) {
-            this.spaces[y-1][x-1].neighboringMineCount++;
+            Space space = this.spaces[y-1][x-1];
+            space.setNeighboringMineCount(space.getNeighboringMineCount() + 1);
         }
         if (y-1 >= 0 && x+1 < this.spaces[y].length) {
-            this.spaces[y-1][x+1].neighboringMineCount++;
+            Space space = this.spaces[y-1][x+1];
+            space.setNeighboringMineCount(space.getNeighboringMineCount() + 1);
         }
         if (y+1 < this.spaces.length && x-1 >= 0) {
-            this.spaces[y+1][x-1].neighboringMineCount++;
+            Space space = this.spaces[y+1][x-1];
+            space.setNeighboringMineCount(space.getNeighboringMineCount() + 1);
         }
         if (y+1 < this.spaces.length && x+1 < this.spaces[y].length) {
-            this.spaces[y+1][x+1].neighboringMineCount++;
+            Space space = this.spaces[y+1][x+1];
+            space.setNeighboringMineCount(space.getNeighboringMineCount() + 1);
         }
     }
 
@@ -82,7 +96,7 @@ class Game {
             int x = rand.nextInt(this.spaces[y].length);
 
             Space existing = this.spaces[y][x];
-            if (existing.isMine || existing.state == SpaceState.UNCOVERED) {
+            if (existing.getIsMine() || existing.getState() == SpaceState.UNCOVERED) {
                 continue;
             }
 
@@ -95,7 +109,7 @@ class Game {
         for (int y = 0; y < this.spaces.length; y++) {
             for (int x = 0; x < this.spaces.length; x++) {
                 Space space = this.spaces[y][x];
-                if (!(space.state == SpaceState.UNCOVERED || space.isMine)) {
+                if (!(space.getState() == SpaceState.UNCOVERED || space.getIsMine())) {
                     return false;
                 }
             }
@@ -107,8 +121,8 @@ class Game {
         for (int y = 0; y < this.spaces.length; y++) {
             for (int x = 0; x < this.spaces[y].length; x++) {
                 Space space = this.spaces[y][x];
-                if (space.isMine) {
-                    space.state = SpaceState.UNCOVERED;
+                if (space.getIsMine()) {
+                    space.setState(SpaceState.UNCOVERED);
                 }
             }
         }
@@ -124,26 +138,26 @@ class Game {
 
     private Error uncoverInner(int x, int y, boolean root) {
         Space uncovered = this.spaces[y][x];
-        if (uncovered.state == SpaceState.UNCOVERED) {
+        if (uncovered.getState() == SpaceState.UNCOVERED) {
             return null;
         }
-        if (root && uncovered.state == SpaceState.FLAGGED) {
+        if (root && uncovered.getState() == SpaceState.FLAGGED) {
             return new Error("You cannot uncover a flagged space.");
         }
 
-        uncovered.state = SpaceState.UNCOVERED;
+        uncovered.setState(SpaceState.UNCOVERED);
 
         if (this.state == GameState.INIT) {
             this.initMines();
             this.state = GameState.PLAYING;
         }
-        if (root && uncovered.isMine) {
+        if (root && uncovered.getIsMine()) {
             this.state = GameState.LOST;
             this.uncoverAllMines();
             return null;
         }
 
-        if (uncovered.neighboringMineCount > 0) {
+        if (uncovered.getNeighboringMineCount() > 0) {
             return null;
         }
 
@@ -178,20 +192,20 @@ class Game {
 
     Error flag(int x, int y) {
         Space space = this.spaces[y][x];
-        if (space.state != SpaceState.COVERED) {
+        if (space.getState() != SpaceState.COVERED) {
             return new Error("You cannot flag a non-covered space.");
         }
-        this.spaces[y][x].state = SpaceState.FLAGGED;
+        space.setState(SpaceState.FLAGGED);
         this.flagsUsed++;
         return null;
     }
 
     Error unflag(int x, int y) {
         Space space = this.spaces[y][x];
-        if (space.state != SpaceState.FLAGGED) {
+        if (space.getState() != SpaceState.FLAGGED) {
             return new Error("You cannot unflag a non-flagged space.");
         }
-        this.spaces[y][x].state = SpaceState.COVERED;
+        space.setState(SpaceState.COVERED);
         this.flagsUsed--;
         return null;
     }

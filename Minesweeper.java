@@ -27,16 +27,16 @@ public class Minesweeper {
         while (true) {
             System.out.println(game.toString());
 
-            if (game.state == GameState.LOST) {
+            if (game.getState() == GameState.LOST) {
                 System.out.println("You lost.");
                 return;
             }
-            if (game.state == GameState.WON) {
+            if (game.getState() == GameState.WON) {
                 System.out.println("You won!");
                 return;
             }
 
-            System.out.println("Flags used: " + game.flagsUsed);
+            System.out.println("Flags used: " + game.getFlagsUsed());
             System.out.println("Make a move in the format (uncover|flag|unflag <row index> <column index>):");
             System.out.print(" > ");
 

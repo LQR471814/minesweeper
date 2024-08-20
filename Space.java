@@ -5,9 +5,30 @@ enum SpaceState {
 }
 
 class Space {
-    SpaceState state = SpaceState.COVERED;
-    boolean isMine;
-    int neighboringMineCount;
+    private SpaceState state = SpaceState.COVERED;
+    private boolean isMine;
+    private int neighboringMineCount;
+
+    SpaceState getState() {
+        return this.state;
+    }
+    void setState(SpaceState state) {
+        this.state = state;
+    }
+
+    boolean getIsMine() {
+        return this.isMine;
+    }
+    void setIsMine(boolean isMine) {
+        this.isMine = isMine;
+    }
+
+    int getNeighboringMineCount() {
+        return this.neighboringMineCount;
+    }
+    void setNeighboringMineCount(int neighboringMineCount) {
+        this.neighboringMineCount = neighboringMineCount;
+    }
 
     @Override
     public String toString() {
