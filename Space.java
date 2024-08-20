@@ -1,7 +1,6 @@
 enum SpaceState {
     COVERED,
     UNCOVERED,
-    NUMBER_SHOWN,
     FLAGGED
 }
 
@@ -19,9 +18,10 @@ class Space {
                 if (this.isMine) {
                     return Color.BOLD + Color.RED + "*" + Color.RESET;
                 }
+                if (this.neighboringMineCount > 0) {
+                    return Color.NUM[this.neighboringMineCount] + this.neighboringMineCount + Color.RESET;
+                }
                 return " ";
-            case SpaceState.NUMBER_SHOWN:
-                return Color.NUM[this.neighboringMineCount] + this.neighboringMineCount + Color.RESET;
             case SpaceState.FLAGGED:
                 return Color.CYAN + ">" + Color.RESET;
             default:

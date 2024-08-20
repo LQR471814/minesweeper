@@ -1,7 +1,7 @@
 import java.util.Random;
 
 enum GameState {
-    INIT, //mine have yet to be initialized
+    INIT, // mines have yet to be initialized
     PLAYING,
     LOST,
     WON
@@ -84,8 +84,6 @@ class Game {
             this.addMine(x, y);
             generated++;
         }
-
-        this.state = GameState.PLAYING;
     }
 
     private boolean hasWon() {
@@ -100,86 +98,70 @@ class Game {
         return true;
     }
 
-    void uncover(int x, int y) {
-        Space uncovered = this.spaces[y][x];
-        uncovered.state = SpaceState.UNCOVERED;
+    private void uncoverAllMines() {
+        for (int y = 0; y < this.spaces.length; y++) {
+            for (int x = 0; x < this.spaces[y].length; x++) {
+                Space space = this.spaces[y][x];
+                if (space.isMine) {
+                    space.state = SpaceState.UNCOVERED;
+                }
+            }
+        }
+    }
 
+    void uncover(int x, int y) {
         if (this.state == GameState.INIT) {
             this.initMines();
+            this.state = GameState.PLAYING;
         }
-        if (uncovered.isMine) {
-            this.state = GameState.LOST;
-            return;
-        }
-
-        if (y-1 >= 0) {
-            this.uncoverNeighbor(x, y-1);
-        }
-        if (y+1 < this.spaces.length) {
-            this.uncoverNeighbor(x, y+1);
-        }
-        if (x-1 >= 0) {
-            this.uncoverNeighbor(x-1, y);
-        }
-        if (x+1 < this.spaces[y].length) {
-            this.uncoverNeighbor(x+1, y);
-        }
-
-        if (y-1 >= 0 && x-1 >= 0) {
-            this.uncoverNeighbor(x-1, y-1);
-        }
-        if (y-1 >= 0 && x+1 < this.spaces[y].length) {
-            this.uncoverNeighbor(x+1, y-1);
-        }
-        if (y+1 < this.spaces.length && x-1 >= 0) {
-            this.uncoverNeighbor(x-1, y+1);
-        }
-        if (y+1 < this.spaces.length && x+1 < this.spaces[y].length) {
-            this.uncoverNeighbor(x+1, y+1);
-        }
-
+        this.uncoverInner(x, y, true);
         if (this.hasWon()) {
             this.state = GameState.WON;
         }
     }
 
-    private void uncoverNeighbor(int x, int y) {
-        Space space = this.spaces[y][x];
-        if (space.state == SpaceState.UNCOVERED) {
+    private void uncoverInner(int x, int y, boolean root) {
+        Space uncovered = this.spaces[y][x];
+        if (uncovered.state == SpaceState.UNCOVERED) {
             return;
         }
 
-        if (space.neighboringMineCount == 0) {
-            space.state = SpaceState.UNCOVERED;
-        } else {
-            space.state = SpaceState.NUMBER_SHOWN;
+        uncovered.state = SpaceState.UNCOVERED;
+
+        if (root && uncovered.isMine) {
+            this.state = GameState.LOST;
+            this.uncoverAllMines();
+            return;
+        }
+
+        if (uncovered.neighboringMineCount > 0) {
             return;
         }
 
         if (y-1 >= 0) {
-            this.uncoverNeighbor(x, y-1);
+            this.uncoverInner(x, y-1, false);
         }
         if (y+1 < this.spaces.length) {
-            this.uncoverNeighbor(x, y+1);
+            this.uncoverInner(x, y+1, false);
         }
         if (x-1 >= 0) {
-            this.uncoverNeighbor(x-1, y);
+            this.uncoverInner(x-1, y, false);
         }
         if (x+1 < this.spaces[y].length) {
-            this.uncoverNeighbor(x+1, y);
+            this.uncoverInner(x+1, y, false);
         }
 
         if (y-1 >= 0 && x-1 >= 0) {
-            this.uncoverNeighbor(x-1, y-1);
+            this.uncoverInner(x-1, y-1, false);
         }
         if (y-1 >= 0 && x+1 < this.spaces[y].length) {
-            this.uncoverNeighbor(x+1, y-1);
+            this.uncoverInner(x+1, y-1, false);
         }
         if (y+1 < this.spaces.length && x-1 >= 0) {
-            this.uncoverNeighbor(x-1, y+1);
+            this.uncoverInner(x-1, y+1, false);
         }
         if (y+1 < this.spaces.length && x+1 < this.spaces[y].length) {
-            this.uncoverNeighbor(x+1, y+1);
+            this.uncoverInner(x+1, y+1, false);
         }
     }
 
