@@ -12,6 +12,8 @@ class Game {
     int numberMines;
     GameState state = GameState.INIT;
 
+    int flagsUsed;
+
     private void initSpaces() {
         for (int y = 0; y < this.spaces.length; y++) {
             for (int x = 0; x < this.spaces[y].length; x++) {
@@ -21,18 +23,21 @@ class Game {
     }
 
     void startEasy() {
+        this.flagsUsed = 0;
         this.spaces = new Space[9][9];
         this.numberMines = 10;
         this.initSpaces();
     }
 
     void startMedium() {
+        this.flagsUsed = 0;
         this.spaces = new Space[16][16];
         this.numberMines = 40;
         this.initSpaces();
     }
 
     void startHard() {
+        this.flagsUsed = 0;
         this.spaces = new Space[16][30];
         this.numberMines = 99;
         this.initSpaces();
@@ -77,7 +82,7 @@ class Game {
             int x = rand.nextInt(this.spaces[y].length);
 
             Space existing = this.spaces[y][x];
-            if (existing.isMine || existing.state != SpaceState.COVERED) {
+            if (existing.isMine || existing.state == SpaceState.UNCOVERED) {
                 continue;
             }
 
@@ -109,33 +114,37 @@ class Game {
         }
     }
 
-    void uncover(int x, int y) {
-        if (this.state == GameState.INIT) {
-            this.initMines();
-            this.state = GameState.PLAYING;
-        }
-        this.uncoverInner(x, y, true);
+    Error uncover(int x, int y) {
+        Error err = this.uncoverInner(x, y, true);
         if (this.hasWon()) {
             this.state = GameState.WON;
         }
+        return err;
     }
 
-    private void uncoverInner(int x, int y, boolean root) {
+    private Error uncoverInner(int x, int y, boolean root) {
         Space uncovered = this.spaces[y][x];
         if (uncovered.state == SpaceState.UNCOVERED) {
-            return;
+            return null;
+        }
+        if (root && uncovered.state == SpaceState.FLAGGED) {
+            return new Error("You cannot uncover a flagged space.");
         }
 
         uncovered.state = SpaceState.UNCOVERED;
 
+        if (this.state == GameState.INIT) {
+            this.initMines();
+            this.state = GameState.PLAYING;
+        }
         if (root && uncovered.isMine) {
             this.state = GameState.LOST;
             this.uncoverAllMines();
-            return;
+            return null;
         }
 
         if (uncovered.neighboringMineCount > 0) {
-            return;
+            return null;
         }
 
         if (y-1 >= 0) {
@@ -163,10 +172,28 @@ class Game {
         if (y+1 < this.spaces.length && x+1 < this.spaces[y].length) {
             this.uncoverInner(x+1, y+1, false);
         }
+
+        return null;
     }
 
-    void flag(int x, int y) {
+    Error flag(int x, int y) {
+        Space space = this.spaces[y][x];
+        if (space.state != SpaceState.COVERED) {
+            return new Error("You cannot flag a non-covered space.");
+        }
         this.spaces[y][x].state = SpaceState.FLAGGED;
+        this.flagsUsed++;
+        return null;
+    }
+
+    Error unflag(int x, int y) {
+        Space space = this.spaces[y][x];
+        if (space.state != SpaceState.FLAGGED) {
+            return new Error("You cannot unflag a non-flagged space.");
+        }
+        this.spaces[y][x].state = SpaceState.COVERED;
+        this.flagsUsed--;
+        return null;
     }
 
     @Override

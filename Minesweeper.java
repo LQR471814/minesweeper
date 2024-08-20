@@ -36,7 +36,8 @@ public class Minesweeper {
                 return;
             }
 
-            System.out.println("Make a move in the format (uncover|flag <row index> <column index>):");
+            System.out.println("Flags used: " + game.flagsUsed);
+            System.out.println("Make a move in the format (uncover|flag|unflag <row index> <column index>):");
             System.out.print(" > ");
 
             String input = scanner.nextLine();
@@ -50,6 +51,7 @@ public class Minesweeper {
             switch (action) {
                 case "uncover":
                 case "flag":
+                case "unflag":
                     break;
                 default:
                     System.out.println(String.format(
@@ -80,13 +82,20 @@ public class Minesweeper {
                 continue;
             }
 
+            Error err = null;
             switch (action) {
                 case "uncover":
-                    game.uncover(x, y);
+                    err = game.uncover(x, y);
                     break;
                 case "flag":
-                    game.flag(x, y);
+                    err = game.flag(x, y);
                     break;
+                case "unflag":
+                    err = game.unflag(x, y);
+                    break;
+            }
+            if (err != null) {
+                System.out.println("\n[ERROR] " + err.getMessage() + "\n");
             }
         }
     }
