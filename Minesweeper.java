@@ -37,7 +37,7 @@ public class Minesweeper {
             }
 
             System.out.println("Flags used: " + game.getFlagsUsed());
-            System.out.println("Make a move in the format (uncover|flag|unflag <row index> <column index>):");
+            System.out.println("Make a move in the format (uncover|flag|unflag <column index> <row index>):");
             System.out.print(" > ");
 
             String input = scanner.nextLine();
