@@ -128,7 +128,15 @@ class Game {
         }
     }
 
+    private boolean notInBounds(int x, int y) {
+        return x < 0 || y < 0 || x >= this.spaces[0].length || y >= this.spaces.length;
+    }
+
     Error uncover(int x, int y) {
+        if (notInBounds(x, y)) {
+            return new Error("Invalid column or row.");
+        }
+
         Error err = this.uncoverInner(x, y, true);
         if (this.hasWon()) {
             this.state = GameState.WON;
@@ -191,6 +199,10 @@ class Game {
     }
 
     Error flag(int x, int y) {
+        if (notInBounds(x, y)) {
+            return new Error("Invalid column or row.");
+        }
+
         Space space = this.spaces[y][x];
         if (space.getState() != SpaceState.COVERED) {
             return new Error("You cannot flag a non-covered space.");
@@ -201,6 +213,10 @@ class Game {
     }
 
     Error unflag(int x, int y) {
+        if (notInBounds(x, y)) {
+            return new Error("Invalid column or row.");
+        }
+
         Space space = this.spaces[y][x];
         if (space.getState() != SpaceState.FLAGGED) {
             return new Error("You cannot unflag a non-flagged space.");
